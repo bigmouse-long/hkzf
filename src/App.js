@@ -1,19 +1,23 @@
 import React from 'react';
-import {BrowserRouter as Router,Route,Link} from 'react-router-dom'
+// 导入路由模块
+import { BrowserRouter as Router, Route, Link,Redirect } from 'react-router-dom'
+// 导入要展示的组件页面
 import Home from './pages/Home'
 import CityList from './pages/CityList'
-// 导入要使用的组件
-import { Button } from 'antd-mobile'
+import Search from './pages/Search'
+import Map from './pages/Map'
 function App() {
   return (
     <Router>
-    <div className="App">
-     {/* 1223<Button type="warning"/> */}
-     <Link to="/home">首页</Link>
-     <Link to="/citylist">城市列表</Link>
-     <Route path="/home" component={Home}></Route>
-     <Route path="/citylist" component={CityList}></Route>
-    </div>
+      <div className="App">
+    {/* 默认路由,匹配时跳转到/home  实现路由重定向*/}
+    <Route exact path="/" render={()=><Redirect to="/home" />}></Route>
+        {/* 配置路由 */}
+        <Route path="/home" component={Home}></Route>
+        <Route path="/citylist" component={CityList}></Route>
+        <Route path="/search" component={Search}></Route>
+        <Route path="/map" component={Map}></Route>
+      </div>
     </Router>
   );
 }
