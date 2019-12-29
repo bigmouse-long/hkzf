@@ -1,5 +1,5 @@
 html,body{
-  height: 100%;
+
   font-family: 'Microsoft YaHei';
   color: #333;
   background-color: #fff;
@@ -9,6 +9,13 @@ html,body{
   /* 解决Chrome的滑动报错 */
   touch-action: pan-y;
 }
-h2,p{
+h2,p,h1{
   margin: 0;
 }
+html,body,#root,.App{
+  height: 100%;
+}
+html,body{
+  margin: 0;
+  padding: 0;
+}   

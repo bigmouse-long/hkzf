@@ -30,6 +30,10 @@ const tabItems=[
         path:"/home/proify"
     }
 ]
+// // h5中的地理定位信息
+// navigator.geolocation.getCurrentPosition(position=>{
+//     console.log(position)
+// })
 export default class Home extends React.Component {
     state = {
         // 控制默认选中的

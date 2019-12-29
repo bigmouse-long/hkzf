@@ -2,7 +2,7 @@ import React from 'react'
 // 导入axios请求数据
 import axios from '../axios'
 // 导入组件
-import { Carousel, Flex, Toast, Grid ,WingBlank } from 'antd-mobile';
+import { Carousel, Flex, Toast, Grid, WingBlank } from 'antd-mobile';
 // 导入图片
 import Nav1 from '../../assets/images/nav-1.png'
 import Nav2 from '../../assets/images/nav-2.png'
@@ -38,7 +38,10 @@ const navData = [
         path: 'rent'
     },
 ]
-
+// h5中的地理定位信息
+navigator.geolocation.getCurrentPosition(position=>{
+    console.log(position)
+})
 export default class Index extends React.Component {
     state = {
         // 轮播图数据
@@ -47,8 +50,10 @@ export default class Index extends React.Component {
         isSwiperLoad: false,
         // 租房小组数据
         groups: [],
-            // 最新资讯
-    news: []
+        // 最新资讯
+        news: [],
+        // 当前城市
+        currentCity: ''
 
     }
     //   请求轮播图方法
@@ -71,18 +76,18 @@ export default class Index extends React.Component {
             groups: res.body
         })
     }
-     // 获取最新资讯
-  async getNews() {
-    const res = await axios.get(
-      '/home/news?area=AREA%7C88cff55c-aaa4-e2e0'
-    )
-    if (res.status !== 200) {
-        Toast.fail('获取最新资讯数据失败')
+    // 获取最新资讯
+    async getNews() {
+        const res = await axios.get(
+            '/home/news?area=AREA%7C88cff55c-aaa4-e2e0'
+        )
+        if (res.status !== 200) {
+            Toast.fail('获取最新资讯数据失败')
+        }
+        this.setState({
+            news: res.body
+        })
     }
-    this.setState({
-      news: res.body
-    })
-  }
     // 循环渲染导航栏数据
     renderNav = () => {
         return navData.map((item) =>
@@ -92,32 +97,45 @@ export default class Index extends React.Component {
             </Flex.Item>
         )
     }
-     // 渲染最新资讯
-  renderNews() {
-    return this.state.news.map(item => (
-      <div className="news-item" key={item.id}>
-        <div className="imgwrap">
-          <img
-            className="img"
-            src={`http://localhost:8080${item.imgSrc}`}
-            alt=""
-          />
-        </div>
-        <Flex className="content" direction="column" justify="between">
-          <p className="title">{item.title}</p>
-          <Flex className="info" justify="between">
-            <span>{item.from}</span>
-            <span>{item.date}</span>
-          </Flex>
-        </Flex>
-      </div>
-    ))
-  }
+    // 渲染最新资讯
+    renderNews() {
+        return this.state.news.map(item => (
+            <div className="news-item" key={item.id}>
+                <div className="imgwrap">
+                    <img
+                        className="img"
+                        src={`http://localhost:8080${item.imgSrc}`}
+                        alt=""
+                    />
+                </div>
+                <Flex className="content" direction="column" justify="between">
+                    <p className="title">{item.title}</p>
+                    <Flex className="info" justify="between">
+                        <span>{item.from}</span>
+                        <span>{item.date}</span>
+                    </Flex>
+                </Flex>
+            </div>
+        ))
+    }
     // 页面dom元素加载完成调用
     componentDidMount() {
         this.getSwiperData()
         this.getGroupsData()
         this.getNews()
+        // 调用地图信息获取当前城市信息
+        var myCity = new window.BMap.LocalCity();
+        myCity.get(async (res) => {
+            console.log(res)
+            localStorage.setItem("city",JSON.stringify(res))
+            // 获取当前城市的房源信息
+            const result = await axios.get("/area/info?name=" + res.name)
+            // console.log(result)
+            // 更新当前城市
+            this.setState({
+                currentCity: result.body.label
+            })
+        });
     }
 
     render() {
@@ -139,34 +157,34 @@ export default class Index extends React.Component {
                     </Carousel> : ''
 
                     }
-                     {/* 搜索框 */}
-          <Flex className="search-box">
-            {/* 左侧白色区域 */}
-            <Flex className="search">
-              {/* 位置 */}
-              <div
-                className="location"
-                onClick={() => this.props.history.push('/citylist')}
-              >
-                <span className="name">上海</span>
-                <i className="iconfont icon-arrow" />
-              </div>
+                    {/* 搜索框 */}
+                    <Flex className="search-box">
+                        {/* 左侧白色区域 */}
+                        <Flex className="search">
+                            {/* 位置 */}
+                            <div
+                                className="location"
+                                onClick={() => this.props.history.push('/citylist')}
+                            >
+                                <span className="name">{this.state.currentCity}</span>
+                                <i className="iconfont icon-arrow" />
+                            </div>
 
-              {/* 搜索表单 */}
-              <div
-                className="form"
-                onClick={() => this.props.history.push('/search')}
-              >
-                <i className="iconfont icon-seach" />
-                <span className="text">请输入小区或地址</span>
-              </div>
-            </Flex>
-            {/* 右侧地图图标 */}
-            <i
-              className="iconfont icon-map"
-              onClick={() => this.props.history.push('/map')}
-            />
-          </Flex>
+                            {/* 搜索表单 */}
+                            <div
+                                className="form"
+                                onClick={() => this.props.history.push('/search')}
+                            >
+                                <i className="iconfont icon-seach" />
+                                <span className="text">请输入小区或地址</span>
+                            </div>
+                        </Flex>
+                        {/* 右侧地图图标 */}
+                        <i
+                            className="iconfont icon-map"
+                            onClick={() => this.props.history.push('/map')}
+                        />
+                    </Flex>
                 </div>
 
                 {/* 导航菜单 */}
@@ -191,11 +209,11 @@ export default class Index extends React.Component {
                         </Flex>
                     )}
                 />
-                  {/* 最新资讯 */}
-        <div className="news">
-          <h3 className="group-title">最新资讯</h3>
-          <WingBlank size="md">{this.renderNews()}</WingBlank>
-        </div>
+                {/* 最新资讯 */}
+                <div className="news">
+                    <h3 className="group-title">最新资讯</h3>
+                    <WingBlank size="md">{this.renderNews()}</WingBlank>
+                </div>
             </div>
         )
     }
